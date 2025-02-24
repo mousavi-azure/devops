@@ -99,25 +99,14 @@ Ensure you have:
 ✅ SSH access to the target server  
 ✅ An inventory file specifying the hosts  
 
-### 📌 **Using a Playbook**  
-Run the following command to apply a playbook:  
-```sh
-ansible-playbook -i inventory.ini playbooks/install-nginx-certbot.yml
-🛠 Example Inventory File (inventory.ini)
-[webservers]
-192.168.1.10 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa
-
 💡 Why Use This Repository?
 ✔ Production-Ready: These playbooks follow best practices.
 ✔ Beginner-Friendly: Clear and simple instructions for use.
 ✔ Time-Saving: Automate tasks and reduce manual setup.
 
 🤝 Contributing
-Want to improve or add new playbooks? Feel free to fork this repository and create a pull request! 🚀
+Want to improve or add new playbooks? Feel free to fork this repository and create a pull request! 🚀#
 
 📜 License
 This project is licensed under the MIT License.
 
-🔗 Stay Connected:
-💻 GitHub: Your GitHub Profile
-📧 Email: your-email@example.com
