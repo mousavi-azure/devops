@@ -1,0 +1,36 @@
+---
+- name: Install Nginx and Certbot
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Install Certbot
+      apt:
+        name: certbot
+        state: present
+        update_cache: yes
+
+    - name: Install Nginx plugin for Certbot
+      apt:
+        name: python3-certbot-nginx
+        state: present
+        update_cache: yes
+
+    - name: Ensure Nginx is started and enabled
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Test Nginx configuration
+      command: nginx -t
+
+    - name: Reload Nginx to apply new configuration
+      service:
+        name: nginx
+        state: reloaded
