@@ -1,0 +1,108 @@
+---
+- name: Install Docker and Docker Compose
+  hosts: all
+  become: true
+  vars:
+    docker_users: ["ansible-user"]  # Add users to the Docker group
+  
+  tasks:
+    - name: Gather OS Information
+      ansible.builtin.setup:
+        gather_subset:
+          - distribution
+          - distribution_version
+      register: system_info
+
+    - name: Install Dependencies (Ubuntu/Debian)
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+        update_cache: yes
+      when: system_info.ansible_facts.ansible_distribution in ["Ubuntu", "Debian"]
+
+    - name: Install Dependencies (CentOS/RHEL)
+      ansible.builtin.yum:
+        name:
+          - yum-utils
+          - device-mapper-persistent-data
+          - lvm2
+        state: present
+      when: system_info.ansible_facts.ansible_distribution in ["CentOS", "RedHat"]
+
+    - name: Add Docker GPG Key (Ubuntu/Debian)
+      ansible.builtin.shell: |
+        curl -fsSL https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg | sudo apt-key add -
+      when: system_info.ansible_facts.ansible_distribution in ["Ubuntu", "Debian"]
+
+    - name: Add Docker Repository (Ubuntu/Debian)
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable"
+        state: present
+      when: system_info.ansible_facts.ansible_distribution in ["Ubuntu", "Debian"]
+
+    - name: Add Docker Repository (CentOS/RHEL)
+      ansible.builtin.yum_repository:
+        name: docker
+        description: Docker Repository
+        baseurl: https://download.docker.com/linux/centos/docker-ce.repo
+        enabled: yes
+        gpgcheck: no
+      when: system_info.ansible_facts.ansible_distribution in ["CentOS", "RedHat"]
+
+    - name: Install Docker (Ubuntu/Debian)
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+        update_cache: yes
+      when: system_info.ansible_facts.ansible_distribution in ["Ubuntu", "Debian"]
+
+    - name: Install Docker (CentOS/RHEL)
+      ansible.builtin.yum:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+      when: system_info.ansible_facts.ansible_distribution in ["CentOS", "RedHat"]
+
+    - name: Enable and Start Docker
+      ansible.builtin.systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Install Docker Compose
+      ansible.builtin.get_url:
+        url: "https://github.com/docker/compose/releases/latest/download/docker-compose-{{ ansible_system }}-x86_64"
+        dest: "/usr/local/bin/docker-compose"
+        mode: '0755'
+
+    - name: Verify Docker Installation
+      ansible.builtin.shell: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Verify Docker Compose Installation
+      ansible.builtin.shell: docker-compose --version
+      register: compose_version
+      changed_when: false
+
+    - name: Display Installed Versions
+      ansible.builtin.debug:
+        msg:
+          - "✅ {{ docker_version.stdout }}"
+          - "✅ {{ compose_version.stdout }}"
+
+    - name: Add Users to Docker Group
+      ansible.builtin.user:
+        name: "{{ item }}"
+        groups: docker
+        append: yes
+      loop: "{{ docker_users }}"
