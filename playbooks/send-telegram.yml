@@ -1,0 +1,16 @@
+---
+- name: Send test Telegram message from Semaphore
+  hosts: localhost
+  gather_facts: false
+  vars:
+    message: "📣 Hello from Semaphore via Ansible + Variable Groups"
+  tasks:
+    - name: Send Telegram message
+      uri:
+        url: "https://api.telegram.org/bot{{ bot_token }}/sendMessage"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          chat_id: "{{ chat_id }}"
+          text: "{{ message }}"
+        status_code: 200
