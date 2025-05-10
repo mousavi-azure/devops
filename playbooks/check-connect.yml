@@ -1,0 +1,10 @@
+---
+- name: Check hostname and uptime
+  hosts: ubuntu
+  become: true
+  tasks:
+    - name: Print hostname
+      command: hostname
+
+    - name: Print uptime
+      command: uptime
